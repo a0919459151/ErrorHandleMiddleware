@@ -1,15 +1,16 @@
+using System.Net;
+using Microsoft.AspNetCore.Diagnostics;
+using Middleware.Exceptions;
+using Middleware.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -19,6 +20,40 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// exception handling with middleware
+// app.Use(async (context, next) =>
+// {
+//     try
+//     {
+//         await next();
+//     }
+//     catch (Exception ex)
+//     {
+//         var response = context.Response;
+//         response.ContentType = "application/json";
+//         switch (ex)
+//         {
+//             case AppException e:
+//                 // custom application error
+//                 response.StatusCode = (int)HttpStatusCode.BadRequest;
+//                 break;
+//             case KeyNotFoundException e:
+//                 // not found error
+//                 response.StatusCode = (int)HttpStatusCode.NotFound;
+//                 break;
+//             default:
+//                 // unhandled error
+//                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
+//                 break;
+//         }
+//         await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+//     }
+// });
+
+// app.UseMiddleware<ErrorHandlerMiddleware>();
+
+app.UseErrorHandler();
 
 app.MapControllers();
 
