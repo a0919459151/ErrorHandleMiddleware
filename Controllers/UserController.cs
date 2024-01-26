@@ -28,8 +28,7 @@ namespace Middleware.Controllers
                 throw new AppException($"Username \"{request.UserName}\" is already taken.");
 
             // Create password hash
-            string passwordHash, passwordSalt;
-            CreatePasswordHash(request.Password, out passwordHash, out passwordSalt);
+            var (passwordHash, passwordSalt) = CreatePasswordHash(request.Password);
 
             // Set password hash and salt
             var user = new User()
@@ -69,10 +68,11 @@ namespace Middleware.Controllers
             return user;
         }
 
-        private void CreatePasswordHash(string password, out string passwordHash, out string passwordSalt)
+        private (string passwordHash, string passwordSalt) CreatePasswordHash(string password)
         {
-            passwordSalt = BCrypt.Net.BCrypt.GenerateSalt();
-            passwordHash = BCrypt.Net.BCrypt.HashPassword(password, passwordSalt);
+            var passwordSalt = BCrypt.Net.BCrypt.GenerateSalt();
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password, passwordSalt);
+            return (passwordHash, passwordSalt);
         }
 
         private bool VerifyPasswordHash(string password, string storedHash)
